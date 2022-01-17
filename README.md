@@ -67,3 +67,22 @@ curl --location --request GET 'http://localhost:8080/v1/consume/msg/<consumer_na
 --header 'Content-Type: application/json'
 ```
 
+### Register Callback
+```sh
+curl --location --request POST 'http://localhost:8080/v1/consumer/register' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "queue_name": "queue2",
+    "consumer_name": "consumer1",
+    "callback_url": "https://abcd.com/"
+}'
+```
+###### Response:
+```
+{
+    "statusCode": 200,
+    "registered": true
+}
+> Note: `queue` & `consumers` gets auto created on register if not exists. Also if callback fails offset won't be commited
+
+

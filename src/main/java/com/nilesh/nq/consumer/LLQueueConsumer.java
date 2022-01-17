@@ -4,6 +4,11 @@ import com.nilesh.nq.queue.LinkedListQueue;
 import com.nilesh.nq.queue.Node;
 import com.nilesh.nq.response.ConsumeMsgResponse;
 import com.nilesh.nq.service.MetaDataService;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.HashMap;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -12,6 +17,7 @@ import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.util.Pair;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 
 @Getter
@@ -65,6 +71,10 @@ public class LLQueueConsumer implements NqConsumer {
     }
   }
 
+  private Node consumeWithoutCommit(String queueName) {
+    return offsetMap.get(queueName).getSecond();
+  }
+
   @Override
   public ConsumeMsgResponse consume(String queueName, long offset) {
     LinkedListQueue queue = this.metaDataService.getQueue(queueName);
@@ -102,6 +112,30 @@ public class LLQueueConsumer implements NqConsumer {
 
   private void setOffset(String queueName, LinkedListQueue queue, Node node) {
     offsetMap.put(queueName, Pair.of(queue, node));
+  }
+
+  @Retryable(maxAttempts = 3)
+  public void makeCallbackRequest(String queueName, String callbackURL)
+      throws IOException {
+    URL url = new URL(callbackURL);
+    URLConnection con = url.openConnection();
+    HttpURLConnection http = (HttpURLConnection)con;
+    http.setRequestMethod("POST");
+    Node msgNode = this.consumeWithoutCommit(queueName);
+    ConsumeMsgResponse response = ConsumeMsgResponse.builder().offset(msgNode.getOffset())
+        .queueName(queueName).jsonObject(msgNode.getItem()).build();
+    http.setRequestProperty("Content-Type", "application/json");
+    try(OutputStream os = con.getOutputStream()) {
+      byte[] input = response.toString().getBytes("utf-8");
+      os.write(input, 0, input.length);
+    }
+    http.setConnectTimeout(500);
+    http.setDoOutput(true);
+    if(msgNode.getPrevious()!=null){
+      this.setOffset(queueName, metaDataService.getQueue(queueName), msgNode.getPrevious());
+    }else{
+      offsetMap.remove(queueName);
+    }
   }
 
 }

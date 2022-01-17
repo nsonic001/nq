@@ -39,7 +39,7 @@ class LLQueueConsumerTest {
     MetaDataService metaDataService = new MetaDataService();
     LLQueueConsumer consumer = new LLQueueConsumer(metaDataService);
     LinkedListQueue queue = metaDataService.getOrCreateQueue("queue");
-    LLQueueProducer producer = new LLQueueProducer();
+    LLQueueProducer producer = new LLQueueProducer(metaDataService);
     JSONObject json = new JSONObject(); json.put("key", "value");
     JSONObject json1 = new JSONObject(); json1.put("key", "value1");
     JSONObject json2 = new JSONObject(); json2.put("key", "value2");
@@ -106,7 +106,7 @@ class LLQueueConsumerTest {
     MetaDataService metaDataService = new MetaDataService();
     LLQueueConsumer consumer = new LLQueueConsumer(metaDataService);
     LinkedListQueue queue = metaDataService.getOrCreateQueue("queue");
-    LLQueueProducer producer = new LLQueueProducer();
+    LLQueueProducer producer = new LLQueueProducer(metaDataService);
     JSONObject json = new JSONObject(); json.put("key", "value");
     JSONObject json1 = new JSONObject(); json1.put("key", "value1");
     JSONObject json2 = new JSONObject(); json2.put("key", "value2");

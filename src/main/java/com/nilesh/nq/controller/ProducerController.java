@@ -23,7 +23,7 @@ public class ProducerController {
   @Retryable(maxAttempts = 3)
   public AddToQueueResponse AddToQueue(@Valid @RequestBody AddToQueueRequest addToQueueRequest){
     LinkedListQueue queue = metaDataService.getOrCreateQueue(addToQueueRequest.getQueueName());
-    LLQueueProducer producer = new LLQueueProducer();
+    LLQueueProducer producer = new LLQueueProducer(metaDataService);
     producer.produce(queue, addToQueueRequest.getJsonObject());
     return AddToQueueResponse.builder().offset(queue.getHead().getOffset())
         .queueName(addToQueueRequest.getQueueName()).statusCode(200).build();

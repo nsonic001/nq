@@ -28,4 +28,12 @@ class MetaDataServiceTest {
     LLQueueConsumer consumer1 = metaDataService.getOrCreateConsumer("consumer1");
     assertEquals(consumer, consumer1);
   }
+
+  @Test
+  void testRegisterConsumer(){
+    MetaDataService metaDataService = new MetaDataService();
+    metaDataService.registerConsumer("q1", "c1",
+        "http://abcd.com/");
+    assertEquals(metaDataService.getConsumerCallbacks().get("q1").get("c1"), "http://abcd.com/");
+  }
 }
