@@ -83,6 +83,7 @@ curl --location --request POST 'http://localhost:8080/v1/consumer/register' \
     "statusCode": 200,
     "registered": true
 }
+```
 > Note: `queue` & `consumers` gets auto created on register if not exists. Also if callback fails offset won't be commited
 
 
